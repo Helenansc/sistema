@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prefeitura Municipal de Nova Esperança - Sistema de Solicitações</title>
+    <style>
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1669bb;
+            --bg-light: #f6f8fb;
+            --bg-white: #fff;
+            --text-dark: #111;
+            --muted: #666;
+            --border-radius: 10px;
+            --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+            --font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+        }
+
+        header {
+            text-align: center;
+            max-width: 700px;
+            margin-bottom: 32px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-weight: 700;
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        header p {
+            margin: 0;
+            font-size: 1.15rem;
+            color: var(--muted);
+        }
+
+        section {
+            background: var(--bg-white);
+            padding: 24px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-top: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        input[type=text],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        button {
+            margin-top: 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            user-select: none;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #eee;
+            color: var(--text-dark);
+            margin-left: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #ddd;
+        }
+
+        .secretarias {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .secretaria-btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            user-select: none;
+            flex: 1 1 45%;
+            text-align: center;
+            min-width: 140px;
+            transition: background-color 0.3s ease;
+        }
+
+        .secretaria-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        #form-section {
+            display: none;
+            margin-top: 24px;
+        }
+
+        .info-header {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+            text-align: center;
+        }
+
+        #preview {
+            margin-top: 10px;
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            display: none;
+            object-fit: contain;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: 6px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Prefeitura Municipal de Nova Esperança</h1>
+        <p>Conectando você aos serviços públicos para melhorar nossa cidade.</p>
+    </header>
+
+    <section id="start-section" aria-label="Escolha da secretaria e identificação do cidadão">
+        <label for="citizen-name">Digite seu nome completo para começar</label>
+        <input id="citizen-name" type="text" placeholder="Seu nome completo" autocomplete="name" />
+
+        <div class="error" id="error-nome" aria-live="polite"></div>
+
+        <div class="secretarias" role="list" aria-label="Lista de secretarias para contato">
+            <button class="secretaria-btn" data-secretaria="Secretaria de Saúde">Secretaria de Saúde</button>
+            <button class="secretaria-btn" data-secretaria="Secretaria de Finanças">Secretaria de Finanças</button>
+            <button class="secretaria-btn" data-secretaria="Secretaria de Administração">Secretaria de
+                Administração</button>
+            <button class="secretaria-btn" data-secretaria="Secretaria de Infraestrutura">Secretaria de
+                Infraestrutura</button>
+            <button class="secretaria-btn" data-secretaria="Secretaria de Educação">Secretaria de Educação</button>
+            <button class="secretaria-btn" data-secretaria="Centro Urbano">Centro Urbano</button>
+            <button class="secretaria-btn" data-secretaria="Secretaria de Esportes">Secretaria de Esportes</button>
+        </div>
+    </section>
+
+    <section id="form-section" aria-label="Formulário de solicitação">
+        <div class="info-header" id="secretaria-title"></div>
+
+        <form id="solicitacao-form" novalidate>
+            <label for="titulo">Título da solicitação</label>
+            <input id="titulo" type="text" placeholder="Ex: Buraco na rua X" required />
+
+            <label for="descricao">Descrição detalhada</label>
+            <textarea id="descricao" placeholder="Descreva o problema com detalhes" required></textarea>
+
+            <label for="mensagem">Mensagem complementar (opcional)</label>
+            <textarea id="mensagem" placeholder="Informações extras"></textarea>
+
+            <label for="foto">Foto (opcional)</label>
+            <input id="foto" type="file" accept="image/*" />
+            <img id="preview" alt="Pré-visualização da foto" />
+
+            <div class="actions">
+                <button type="submit">Enviar Solicitação</button>
+                <button type="button" class="btn-secondary" id="btn-voltar">Voltar</button>
+            </div>
+
+            <div class="error" id="form-error" aria-live="polite"></div>
+            <div id="form-sucesso" style="color:green; text-align:center; margin-top:12px; display:none;">Solicitação
+                enviada com sucesso!</div>
+        </form>
+    </section>
+
+    <script>
+        const startSection = document.getElementById('start-section');
+        const formSection = document.getElementById('form-section');
+        const secretariaTitle = document.getElementById('secretaria-title');
+        const citizenNameInput = document.getElementById('citizen-name');
+        const secretariaButtons = document.querySelectorAll('.secretaria-btn');
+        const form = document.getElementById('solicitacao-form');
+        const btnVoltar = document.getElementById('btn-voltar');
+        const errorNome = document.getElementById('error-nome');
+        const formError = document.getElementById('form-error');
+        const formSucesso = document.getElementById('form-sucesso');
+        const inputTitulo = document.getElementById('titulo');
+        const textareaDescricao = document.getElementById('descricao');
+        const textareaMensagem = document.getElementById('mensagem');
+        const inputFoto = document.getElementById('foto');
+        const previewFoto = document.getElementById('preview');
+
+        let secretariaSelecionada = '';
+        let nomeCidadao = '';
+
+        // Mostrar preview da foto
+        inputFoto.addEventListener('change', () => {
+            const file = inputFoto.files[0];
+            if (!file) {
+                previewFoto.style.display = 'none';
+                previewFoto.src = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                previewFoto.src = reader.result;
+                previewFoto.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Quando clicar numa secretaria
+        secretariaButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                errorNome.textContent = '';
+                nomeCidadao = citizenNameInput.value.trim();
+
+                if (nomeCidadao.length < 3) {
+                    errorNome.textContent = 'Por favor, informe seu nome completo antes de continuar.';
+                    citizenNameInput.focus();
+                    return;
+                }
+
+                secretariaSelecionada = btn.dataset.secretaria;
+                secretariaTitle.textContent = `Solicitação para: ${secretariaSelecionada}`;
+
+                // Reset form
+                form.reset();
+                previewFoto.style.display = 'none';
+                formError.textContent = '';
+                formSucesso.style.display = 'none';
+
+                startSection.style.display = 'none';
+                formSection.style.display = 'block';
+            });
+        });
+
+        // Botão voltar
+        btnVoltar.addEventListener('click', () => {
+            formSection.style.display = 'none';
+            startSection.style.display = 'block';
+            formError.textContent = '';
+            formSucesso.style.display = 'none';
+        });
+
+        // Envio do formulário
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            formError.textContent = '';
+            formSucesso.style.display = 'none';
+
+            const titulo = inputTitulo.value.trim();
+            const descricao = textareaDescricao.value.trim();
+
+            if (titulo.length < 5) {
+                formError.textContent = 'Por favor, informe um título com pelo menos 5 caracteres.';
+                inputTitulo.focus();
+                return;
+            }
+            if (descricao.length < 10) {
+                formError.textContent = 'Por favor, informe uma descrição detalhada com pelo menos 10 caracteres.';
+                textareaDescricao.focus();
+                return;
+            }
+
+            // Aqui, você pode adicionar lógica para enviar os dados para servidor ou salvar localmente
+            // Por enquanto, só simula envio e limpa o formulário
+
+            formSucesso.style.display = 'block';
+            form.reset();
+            previewFoto.style.display = 'none';
+        });
+    </script>
+</body>
+
+</html>
